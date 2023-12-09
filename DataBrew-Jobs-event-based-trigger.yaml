@@ -16,7 +16,6 @@ Parameters:
     Description: 'S3 object key, for the event to be matched'
     MaxLength: 1024
     MinLength: 1
-    AllowedPattern: '^[a-zA-Z0-9_.-]+$'
   SourceJobName:
     Type: String
     Description: 'AWS Glue DataBrew Job name, for the event to be matched. Must be different from the TargetJobName'
@@ -184,7 +183,7 @@ Resources:
     Properties:
       StateMachineName: !Join ['', [!Ref 'AWS::StackName','_SourceStateMachine']]
       DefinitionSubstitutions:
-        TargetJobName: !Ref TargetJobName
+        SourceJobName: !Ref SourceJobName
       DefinitionString: |-
         {
           "StartAt": "Glue DataBrew StartJobRun",
@@ -275,3 +274,11 @@ Resources:
             DeadLetterConfig:
               Arn: !GetAtt [DeadLetterConfigQueue, Arn]
 
+  S3Bucket:
+    Type: 'AWS::S3::Bucket'
+    DeletionPolicy: Retain
+    Properties:
+      BucketName: !Ref SourceBucketName
+      NotificationConfiguration:
+        EventBridgeConfiguration:
+          EventBridgeEnabled: true
